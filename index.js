@@ -1,9 +1,13 @@
 const chalk = require('chalk');
 const clear = require('clear');
 const figlet = require('figlet');
-const inquirer = require('./lib/inquirer');
+const Configstore = require('configstore');
 
+const inquirer = require('./lib/inquirer');
+const github = require('./lib/github');
 const files = require('./lib/files');
+
+const conf = new Configstore('ginit');
 
 // 先清空屏幕，然后展示一个banner
 clear();
@@ -20,8 +24,13 @@ if(files.directoryExists('.git')) {
 }
 
 const run = async () => {
+    let token = github.getStoredGithubToken();
+    if (!token) {
+        await github.setGithubCredentials();
+        token = await github.registerNewToken();
+    }
     const credentials = await inquirer.askGithubCredentials();
-    console.log(credentials);
+    console.log(credentials, conf);
 }
 
 run();
